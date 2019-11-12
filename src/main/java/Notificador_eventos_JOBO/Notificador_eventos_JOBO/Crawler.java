@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Crawler {
+
     private String url = "https://madridcultura-jobo.shop.secutix.com/account/login";
+
 
     public void start(){
         start(url);
@@ -45,15 +47,24 @@ public class Crawler {
 
         for(WebElement evento : eventos){
             if(evento.getAttribute("id").contains("prod_")){
-                System.out.println(evento.getText());
-                System.out.println("---------------");
+                String title = title(evento);
+                System.out.println(title);
+                System.out.println("____");
+
             }
         }
+
+
         /*driver.get("http://demo.guru99.com/");
         WebElement element=driver.findElement(By.xpath("//input[@name='emailid']"));
         element.sendKeys("abc@gmail.com ");
 
         WebElement button=driver.findElement(By.xpath("//input[@name='btnLogin']"));
         button.click();*/
+    }
+
+    public String title(WebElement evento){
+        List<WebElement> h = evento.findElements(By.className("date"));
+        return h.get(0).getText().trim();
     }
 }
