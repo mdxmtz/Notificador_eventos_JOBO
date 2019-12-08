@@ -49,9 +49,9 @@ public class Crawler {
                 int id = ID(evento);
                 String title = title(evento);
                 String date = date(evento);
-                //String place = place(evento);
+                String place = place(evento);
                 int agotado = agotado(evento);
-                Evento event = new Evento(id,title," ",date,agotado);
+                Evento event = new Evento(id,title,place,date,agotado);
                 eventosScrap.add(event);
             }
         }
@@ -63,7 +63,7 @@ public class Crawler {
         }
         driver.close();
         MailMan mailMan = new MailMan();
-        //mailMan.sendEventos(newEventos,newEventos);
+        mailMan.sendEventos(newEventos,newEventos);
     }
     //List<Evento> eventosScrap
 
@@ -148,13 +148,19 @@ public class Crawler {
     }
 
     private String place(WebElement evento){
-        //List<WebElement> h = evento.findElements(By.className("location"));
-        //return h.get(1).getText().trim();
-        List<WebElement> spaces = evento.findElements(By.className("space"));
-        List<WebElement> sites = evento.findElements(By.className("site"));
-        String space = spaces.get(1).getText().trim();
-        String site = sites.get(1).getText().trim();
-        String result = space + ", " + site;
+        String result = "";
+
+        try{
+            List<WebElement> spaces = evento.findElements(By.className("location"));
+            //List<WebElement> sites = evento.findElements(By.className("site"));
+
+            String location = spaces.get(1).getText().trim();
+            //String site = sites.get(1).getText().trim();
+            //result = space + ", " + site;
+            result = location;
+        }catch (Exception e){
+            result = "-";
+        }
 
         return result;
 
