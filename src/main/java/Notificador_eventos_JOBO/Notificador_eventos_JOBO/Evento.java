@@ -1,13 +1,13 @@
 package Notificador_eventos_JOBO.Notificador_eventos_JOBO;
 
-public class Evento {
+public class Evento{// implements Comparable<Evento>{
     private int ID = 0;
     private String Nombre = "";
     private String Lugar = "";
     private String Fecha = "";
-    private boolean Agotado = false;
+    private int Agotado = 0;
 
-    public Evento(int ID, String nombre, String lugar, String fecha, Boolean agotado){
+    public Evento(int ID, String nombre, String lugar, String fecha, int agotado){
         setID(ID);
         setNombre(nombre);
         setLugar(lugar);
@@ -16,11 +16,11 @@ public class Evento {
     }
 
     public void showEvento(){
-        System.out.println("ID: " + ID);
-        System.out.println("Titulo: " + Nombre);
-        System.out.println("Fecha: " + Fecha);
-        System.out.println("Lugar: " + Lugar);
-        System.out.println("Agotado: " + Agotado);
+        System.out.println("ID: " + getID());
+        System.out.println("Titulo: " + getNombre());
+        System.out.println("Fecha: " + getFecha());
+        System.out.println("Lugar: " + getLugar());
+        System.out.println("Agotado: " + getAgotado());
     }
 
     public int getID(){
@@ -39,7 +39,7 @@ public class Evento {
         return Fecha;
     }
 
-    public Boolean getAgotado(){
+    public int getAgotado(){
         return Agotado;
     }
 
@@ -59,7 +59,14 @@ public class Evento {
         Fecha = fecha;
     }
 
-    public void setAgotado(Boolean agotado){
+    public void setAgotado(int agotado){
         Agotado = agotado;
     }
+
+    /*@Override
+    public int compareTo(Evento e) {
+        if(getID()<=e.getID())return 0;
+        return 1;
+    }*/
+
 }
