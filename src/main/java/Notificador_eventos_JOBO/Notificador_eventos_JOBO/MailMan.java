@@ -41,9 +41,8 @@ public class MailMan {
                 text += "<div><h3>Título: " + e.getNombre()+"</h3></div>\n\n";
                 text += "<div>Fecha: " + e.getFecha() + "</div>\n\n";
                 text += "<div>Lugar: " +e.getLugar() + "</div>\n\n";
-                text += "<div>_______________"+"</div>\n\n";
                 if(e.getAgotado()==1){
-
+                    text += "<div>Disponible: No </div>\n\n";
                 }else{
                     text += "<div>Disponible: Sí </div>\n\n";
                 }
