@@ -42,7 +42,7 @@ public class Crawler {
 
         List<WebElement> eventos = driver.findElementByClassName("group_content").findElements(By.cssSelector("*"));
 
-        List<Evento> eventosScrap = new ArrayList<Evento>(); //new List<Evento>();
+        Tree eventosScrap = new Tree();
 
         for(WebElement evento : eventos){
             if(evento.getAttribute("id").contains("prod_")){
@@ -52,7 +52,7 @@ public class Crawler {
                 String place = place(evento);
                 int agotado = agotado(evento);
                 Evento event = new Evento(id,title,place,date,agotado);
-                eventosScrap.add(event);
+                eventosScrap.insert(event);
             }
         }
 
@@ -65,39 +65,20 @@ public class Crawler {
         MailMan mailMan = new MailMan();
         mailMan.sendEventos(newEventos,newEventos);
     }
-    //List<Evento> eventosScrap
 
     //Ingresa en la base de datos los nuevos eventos encontrados, y devuleve un lista con los mismos
-    private List<Evento> newEvents(List<Evento> eventosScrap){
+    private List<Evento> newEvents(Tree eventosScrap){
         List<Evento> result = new ArrayList<Evento>();
         try{
-
-
             Class.forName("com.mysql.jdbc.Driver");
             Connection conexion = DriverManager.getConnection("jdbc:mysql://localhost:3306/eventosjobo", "root", "1234");
             Statement st = conexion.createStatement();
             st.executeQuery ("SELECT * FROM eventos");
             ResultSet rs = st.getResultSet ();
-            List<Evento> dbList = dbToList(rs);
+            Tree dbTree = dbToTree(rs);
 
+            result = compareTrees(eventosScrap.root,dbTree.root,result,st);
 
-            boolean add;
-            System.out.println(dbList.size());
-            System.out.println(eventosScrap.size());
-
-            for(Evento evento : eventosScrap){
-                add = true;
-                for(Evento dbevento : dbList){
-                    if(evento.getID() ==  dbevento.getID()){
-                        add = false;
-                        break;
-                    }
-                }
-                if(add){
-                    st.executeUpdate("INSERT INTO eventos (ID, Nombre, Fecha, Lugar, Agotado) VALUES ('"+evento.getID()+"','"+evento.getNombre()+"','"+evento.getFecha()+"','"+evento.getLugar()+"','"+evento.getAgotado()+"')");
-                    result.add(evento);
-                }
-            }
             rs.close();
             st.close();
         }catch (Exception e){
@@ -108,9 +89,36 @@ public class Crawler {
         return result;
     }
 
+    //Compara los eventos scrapeados con los existentes en la base de datos
+    //Devuelve una lista de eventos con aquellos que no estén en la base de datos
+    public List<Evento> compareTrees(Node sNode, Node dbNode, List<Evento> result,  Statement st){
+        if(sNode.left != null)compareTrees(sNode.left,dbNode,result,st);
+        boolean exist = eventoExist(sNode.key,dbNode);
+        if(!exist) {
+            try{
+                result.add(sNode.getEvento());
+                st.executeUpdate("INSERT INTO eventos (ID, Nombre, Fecha, Lugar, Agotado) VALUES ('"+sNode.getEvento().getID()+"','"+sNode.getEvento().getNombre()+"','"+sNode.getEvento().getFecha()+"','"+sNode.getEvento().getLugar()+"','"+sNode.getEvento().getAgotado()+"')");
+            }catch (Exception e){
+                System.out.println("iora");
+            }
+        }
+        if(sNode.right !=null)compareTrees(sNode.right,dbNode,result,st);
+
+        return result;
+    }
+
+    //Comprueba si existe el evento en la base da datos
+    public boolean eventoExist (int key, Node dbNode){
+        if(dbNode == null)return false;
+        if(key==dbNode.key)return true;
+        if(key<dbNode.key)return eventoExist(key,dbNode.left);
+        return eventoExist(key,dbNode.right);
+
+    }
+
     //Convertimos la base de datos de eventos en una lista
-    private List<Evento> dbToList(ResultSet rs){
-        List<Evento> result = new ArrayList<Evento>();
+    private Tree dbToTree(ResultSet rs){
+        Tree result = new Tree();
         try{
 
             while (rs.next())
@@ -122,7 +130,7 @@ public class Crawler {
                 int agotado = Integer.parseInt(rs.getObject("Agotado").toString().trim());
 
                 Evento nEvento = new Evento(ID,nombre,fecha,lugar,agotado);
-                result.add(nEvento);
+                result.insert(nEvento);
             }
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -149,14 +157,9 @@ public class Crawler {
 
     private String place(WebElement evento){
         String result = "";
-
         try{
             List<WebElement> spaces = evento.findElements(By.className("location"));
-            //List<WebElement> sites = evento.findElements(By.className("site"));
-
             String location = spaces.get(1).getText().trim();
-            //String site = sites.get(1).getText().trim();
-            //result = space + ", " + site;
             result = location;
         }catch (Exception e){
             result = "-";
