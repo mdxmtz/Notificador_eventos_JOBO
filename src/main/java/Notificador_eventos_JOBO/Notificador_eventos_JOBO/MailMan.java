@@ -30,53 +30,25 @@ public class MailMan {
             message.setFrom(new InternetAddress(username));
             message.setRecipients(
                     Message.RecipientType.TO,
-                    InternetAddress.parse("pablosky301@gmail.com, pablotcampos25@gmail.com, 100405806@alumnos.uc3m.es")
+                    InternetAddress.parse("pablosky301@gmail.com, pablotcampos25@gmail.com,100405806@alumnos.uc3m.es")
+                    // , irenefluxa@gmail.com
             );
             message.setSubject("Testing Gmail TLS");
-            String text = "# Nuevos eventos disponibles!!! \n\n";
+            String text = "<h1> Actualizaciones de JOBO </h1>\n\n";
+
+             text += "<h2>Nuevos eventos disponibles</h2> \n\n";
             for(Evento e : neventos){
-                //text += e.getID() + "\n";
+                text += "<div><h3>Título: " + e.getNombre()+"</h3></div>\n\n";
+                text += "<div>Fecha: " + e.getFecha() + "</div>\n\n";
+                text += "<div>Lugar: " +e.getLugar() + "</div>\n\n";
+                text += "<div>_______________"+"</div>\n\n";
+                if(e.getAgotado()==1){
 
-                text += "<h3 style=\"font-size:18px;color:rgb(204,102,0);margin:15px 0 0 0;font-weight:normal\">"+ "Título: " + e.getNombre()+"</h3>" + "\n";
-                text += "* Fecha: " + e.getFecha() + "\n";
-                text += "* Lugar: " +e.getLugar() + "\n";
-                text += "_______________"+"\n";
-
+                }else{
+                    text += "<div>Disponible: Sí </div>\n\n";
+                }
             }
-            String text2 = "<!DOCTYPE HTML>\n" +
-                    "<html lang = \"es\">\n" +
-                    "\t<head>\n" +
-                    "\t\t<meta charset = \"utf-8\"/>\n" +
-                    "\t\t<title>Hola Mundo con JS</title>\t\t\n" +
-                    "\t\n" +
-                    "\t</head>\n" +
-                    "\t<body>\n" +
-                    "\t\t<h1>Curso JS</h1>\n" +
-                    "\t\t<p>\n" +
-                    "\t\t\t<button id=\"boton\" onclick=\"\" ondblclick=\"\">Presioname</button>\n" +
-                    "\t\t\t<button id=\"start\" >START</button>\n" +
-                    "\t\t\t<button id=\"stop\" >STOP</button>\n" +
-                    "\t\t\t<form>\n" +
-                    "\t\t\t\t<input type =\"text\" name=\"nombre\" id=\"input\"/>\n" +
-                    "\t\t\t</form>\n" +
-                    "\t\t</p>\n" +
-                    "\n" +
-                    "\t\t<br/>\n" +
-                    "\t\t<div id=\"micaja\">Hola soy una caja</div>\n" +
-                    "\t\t<hr/>\n" +
-                    "\t\t<section id=\"miseccion\">\n" +
-                    "\t\t\t<h1 id=\"encabezado\">Listado de texto de los divs</h1>\n" +
-                    "\t\t</section>\n" +
-                    "\t\t<div class =\"amarillo\">Primero</div>\n" +
-                    "\t\t<div class =\"rojo\">Segundo</div>\n" +
-                    "\t\t<div class =\"rojo\">Tercero</div>\n" +
-                    "\t\t<!-- SCRIPTS \n" +
-                    "\t\t<script type=\"text/javascript\" src=\"js/28-dom.js\"></script>\n" +
-                    "\t\t<script type=\"text/javascript\" src=\"js/29-bom.js\"></script>-->\n" +
-                    "\t</body>\n" +
-                    "</html>";
-            message.setText(text2);
-
+            message.setContent(text,"text/html");
             Transport.send(message);
 
             System.out.println("Done");
