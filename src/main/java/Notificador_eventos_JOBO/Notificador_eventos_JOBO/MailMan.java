@@ -31,8 +31,10 @@ public class MailMan {
 
         String text = "<h1> Actualizaciones de JOBO </h1>\n\n";
         System.out.println(text.length());
-        if(updatedEventos.get(0).size()>0)text += eventToText(updatedEventos.get(0),1);
-        if(updatedEventos.get(1).size()>0)text += eventToText(updatedEventos.get(1),2);
+        if(updatedEventos.get(0).size()>0)text += eventToText(updatedEventos.get(0),0);
+        if(updatedEventos.get(2).size()>0)text += eventToText(updatedEventos.get(2),2);
+        if(updatedEventos.get(1).size()>0)text += eventToText(updatedEventos.get(1),1);
+        if(updatedEventos.get(3).size()>0)text += eventToText(updatedEventos.get(3),3);
         if(text.length()<=36)return;
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -55,11 +57,17 @@ public class MailMan {
     private String eventToText(List<Evento> eventos, int type){
         String text = "";
         switch(type){
-            case 1:
+            case 0:
                 text += "<h2>Nuevos eventos disponibles</h2> \n\n";
                 break;
-            case 2:
+            case 1:
                 text += "<h2>Eventos no disponibles</h2> \n\n";
+                break;
+            case 2:
+                text += "<h2>Vuelve a haber entradas en: </h2> \n\n";
+                break;
+            case 3:
+                text += "<h2>Ya no quedan entradas en:</h2> \n\n";
                 break;
             default:
                 break;
