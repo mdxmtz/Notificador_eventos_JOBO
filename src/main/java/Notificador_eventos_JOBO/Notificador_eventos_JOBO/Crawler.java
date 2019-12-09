@@ -56,19 +56,28 @@ public class Crawler {
             }
         }
 
-        List<Evento> newEventos = newEvents(eventosScrap);
-        for(Evento evento: newEventos){
+        List<List<Evento>> updatedEventos = newEvents(eventosScrap);
+        System.out.println("Eventos nuevos");
+        for(Evento evento: updatedEventos.get(0)){
+            evento.showEvento();
+            System.out.println("________");
+        }
+        System.out.println("Eventos viejos");
+        for(Evento evento: updatedEventos.get(1)){
             evento.showEvento();
             System.out.println("________");
         }
         driver.close();
         MailMan mailMan = new MailMan();
-        mailMan.sendEventos(newEventos,newEventos);
+        mailMan.sendEventos(updatedEventos);
+        System.out.println("Done");
     }
 
     //Ingresa en la base de datos los nuevos eventos encontrados, y devuleve un lista con los mismos
-    private List<Evento> newEvents(Tree eventosScrap){
-        List<Evento> result = new ArrayList<Evento>();
+    private List<List<Evento>> newEvents(Tree eventosScrap){
+        List<List<Evento>> result = new ArrayList<List<Evento>>();
+        List<Evento> newEvents = new ArrayList<Evento>();
+        List<Evento> oldEvents = new ArrayList<Evento>();
         try{
             Class.forName("com.mysql.jdbc.Driver");
             Connection conexion = DriverManager.getConnection("jdbc:mysql://localhost:3306/eventosjobo", "root", "1234");
@@ -77,8 +86,10 @@ public class Crawler {
             ResultSet rs = st.getResultSet ();
             Tree dbTree = dbToTree(rs);
 
-            result = compareTrees(eventosScrap.root,dbTree.root,result,st);
-
+            newEvents = compareTrees(eventosScrap.root,dbTree.root,newEvents,st,false);
+            oldEvents = compareTrees(dbTree.root,eventosScrap.root,oldEvents,st,true);
+            result.add(newEvents);
+            result.add(oldEvents);
             rs.close();
             st.close();
         }catch (Exception e){
@@ -89,20 +100,36 @@ public class Crawler {
         return result;
     }
 
-    //Compara los eventos scrapeados con los existentes en la base de datos
-    //Devuelve una lista de eventos con aquellos que no estén en la base de datos
-    public List<Evento> compareTrees(Node sNode, Node dbNode, List<Evento> result,  Statement st){
-        if(sNode.left != null)compareTrees(sNode.left,dbNode,result,st);
+    /*Compara los elementos de dos árboles en función de DBvsScrap:
+        DBvsScrap = false,
+        Compara el árbol de eventos scrapeados con el árbol de la base de datos,
+        devuelve una lista con los eventos nuevos y los inserta en la db
+
+        DBvsScrap = true,
+        Compara el árbol de la base de datos con el árbol de eventos scrapeados,
+        devuelve una lista con los eventos ya no disponibles y los elimina de la db
+
+
+
+     */
+
+    public List<Evento> compareTrees(Node sNode, Node dbNode, List<Evento> result,  Statement st, boolean DBvsScrap){
+        if(sNode.left != null)compareTrees(sNode.left,dbNode,result,st, DBvsScrap);
         boolean exist = eventoExist(sNode.key,dbNode);
-        if(!exist) {
-            try{
+        try{
+            if(!exist && !DBvsScrap) {
                 result.add(sNode.getEvento());
                 st.executeUpdate("INSERT INTO eventos (ID, Nombre, Fecha, Lugar, Agotado) VALUES ('"+sNode.getEvento().getID()+"','"+sNode.getEvento().getNombre()+"','"+sNode.getEvento().getFecha()+"','"+sNode.getEvento().getLugar()+"','"+sNode.getEvento().getAgotado()+"')");
-            }catch (Exception e){
-                System.out.println("iora");
+            }if(!exist && DBvsScrap){
+                result.add(sNode.getEvento());
+                st.executeUpdate("DELETE FROM eventos WHERE ID="+sNode.getEvento().getID());
             }
+        }catch (Exception e){
+            System.out.println("iora");
+            System.out.println(e.getMessage());
         }
-        if(sNode.right !=null)compareTrees(sNode.right,dbNode,result,st);
+
+        if(sNode.right !=null)compareTrees(sNode.right,dbNode,result,st, DBvsScrap);
 
         return result;
     }
