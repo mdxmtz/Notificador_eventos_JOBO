@@ -76,8 +76,12 @@ public class Crawler {
     //Ingresa en la base de datos los nuevos eventos encontrados, y devuleve un lista con los mismos
     private List<List<Evento>> newEvents(Tree eventosScrap){
         List<List<Evento>> result = new ArrayList<List<Evento>>();
+        List<List<Evento>> updatedEvents = new ArrayList<List<Evento>>();
         List<Evento> newEvents = new ArrayList<Evento>();
         List<Evento> oldEvents = new ArrayList<Evento>();
+        List<Evento> dummyList = new ArrayList<Evento>();
+        updatedEvents.add(dummyList);
+        updatedEvents.add(dummyList);
         try{
             Class.forName("com.mysql.jdbc.Driver");
             Connection conexion = DriverManager.getConnection("jdbc:mysql://localhost:3306/eventosjobo", "root", "1234");
@@ -88,8 +92,12 @@ public class Crawler {
 
             newEvents = compareTrees(eventosScrap.root,dbTree.root,newEvents,st,false);
             oldEvents = compareTrees(dbTree.root,eventosScrap.root,oldEvents,st,true);
-            result.add(newEvents);
-            result.add(oldEvents);
+
+            updatedEvents = compareAvailabilty(eventosScrap.root,dbTree.root,updatedEvents,st);
+            result.add(newEvents);//0
+            result.add(oldEvents);//1
+            result.add(updatedEvents.get(0));//2
+            result.add(updatedEvents.get(1));//3
             rs.close();
             st.close();
         }catch (Exception e){
@@ -98,6 +106,31 @@ public class Crawler {
             return result;
         }
         return result;
+    }
+    private List<List<Evento>> compareAvailabilty(Node sNode, Node dbNode, List<List<Evento>> result,  Statement st){
+        if(sNode.left != null)compareAvailabilty(sNode.left,dbNode,result,st);
+        boolean update = statusChanged(sNode.getEvento(),dbNode);
+        if(update){
+            try{
+                if(sNode.getEvento().getAgotado()==0){
+                    result.get(1).add(sNode.getEvento());
+                    st.executeUpdate("UPDATE eventos SET Agotado = '0' WHERE ID="+sNode.getEvento().getID());
+                }else{
+                    result.get(1).add(sNode.getEvento());
+                    st.executeUpdate("UPDATE eventos SET Agotado = '1' WHERE ID="+sNode.getEvento().getID());
+                }
+            }catch (Exception e){
+
+            }
+        }
+        if(sNode.right !=null)compareAvailabilty(sNode.right,dbNode,result,st);
+        return result;
+    }
+    private boolean statusChanged(Evento e, Node dbNode){
+        if(dbNode == null)return false;
+        if((dbNode.getEvento().getID()==e.getID())&&(dbNode.getEvento().getAgotado()^e.getAgotado())==1)return true;
+        if(e.getID()<dbNode.getEvento().getID())return statusChanged(e,dbNode.left);
+        return statusChanged(e,dbNode.right);
     }
 
     /*Compara los elementos de dos árboles en función de DBvsScrap:
@@ -112,8 +145,7 @@ public class Crawler {
 
 
      */
-
-    public List<Evento> compareTrees(Node sNode, Node dbNode, List<Evento> result,  Statement st, boolean DBvsScrap){
+    private List<Evento> compareTrees(Node sNode, Node dbNode, List<Evento> result,  Statement st, boolean DBvsScrap){
         if(sNode.left != null)compareTrees(sNode.left,dbNode,result,st, DBvsScrap);
         boolean exist = eventoExist(sNode.key,dbNode);
         try{
