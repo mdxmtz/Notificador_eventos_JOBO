@@ -14,20 +14,27 @@ public class MailMan {
 
     final private String username = "anunciosjobo@gmail.com";
     final private String password = "I9H%8Lo!!OOl16";
+    private Properties prop;
+    private Session session;
 
-    public void sendEventos(List<List<Evento>> updatedEventos){
-
-
-        Properties prop = new Properties();
+    public MailMan (){
+        prop = new Properties();
         prop.put("mail.smtp.host", "smtp.gmail.com");
         prop.put("mail.smtp.port", "587");
         prop.put("mail.smtp.auth", "true");
         prop.put("mail.smtp.starttls.enable", "true"); //TLS
 
-        Session session = Session.getInstance(prop, new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {return new PasswordAuthentication(username, password);
-                    }
-                });
+         session = Session.getInstance(prop, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {return new PasswordAuthentication(username, password);
+            }
+        });
+    }
+
+
+    public void sendEventos(List<List<Evento>> updatedEventos){
+
+
+
 
         String text = "<h1> Actualizaciones de JOBO </h1>\n\n";
         System.out.println(text.length());
@@ -43,7 +50,7 @@ public class MailMan {
             st.executeQuery ("SELECT * FROM correos");
             ResultSet rs = st.getResultSet ();
             while(rs.next()){
-                sendMail(text,rs.getObject("correos").toString().trim(),session);
+                sendMail(text,rs.getObject("correos").toString().trim());
             }
             rs.close();
             st.close();
@@ -85,9 +92,9 @@ public class MailMan {
         return text;
     }
 
-    private void sendMail(String text, String to, Session sesion){
+    private void sendMail(String text, String to){
         try{
-            Message message = new MimeMessage(sesion);
+            Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(username));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject("Actualizaciones de JOBO");
@@ -97,5 +104,17 @@ public class MailMan {
             e.printStackTrace();
         }
 
+    }
+    public void sendError(String error){
+        try{
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(username));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+            message.setSubject("ERROR");
+            message.setText(error);
+            Transport.send(message);
+        }catch (Exception e){
+            sendError(e.getMessage());
+        }
     }
 }
