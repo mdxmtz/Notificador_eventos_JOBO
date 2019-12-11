@@ -30,7 +30,7 @@ public class Crawler {
             username.sendKeys("pablosky301@gmail.com");
 
             WebElement password = driver.findElementById("password");
-            password.sendKeys("3sF5qq417");
+            password.sendKeys("");
 
             WebElement button = driver.findElementById("continue_button");
             button.click();
