@@ -20,57 +20,60 @@ public class Crawler {
     }
 
     private void start(String url){
-
-        System.setProperty("webdriver.chrome.driver", "ChromeDriver/chromedriver.exe");
-        ChromeDriver driver = new ChromeDriver();
-        driver.get(url);
-
-        WebElement username = driver.findElementById("login");
-        username.sendKeys("pablosky301@gmail.com");
-
-        WebElement password = driver.findElementById("password");
-        password.sendKeys("3sF5qq417");
-
-        WebElement button = driver.findElementById("continue_button");
-        button.click();
-
-        WebElement button2 = driver.findElementById("account_cart_button");
-        button2.click();
-
-        WebElement button3 = driver.findElementById("addOtherProducts");
-        button3.click();
-
-        List<WebElement> eventos = driver.findElementByClassName("group_content").findElements(By.cssSelector("*"));
-
-        Tree eventosScrap = new Tree();
-
-        for(WebElement evento : eventos){
-            if(evento.getAttribute("id").contains("prod_")){
-                int id = ID(evento);
-                String title = title(evento);
-                String date = date(evento);
-                String place = place(evento);
-                int agotado = agotado(evento);
-                Evento event = new Evento(id,title,place,date,agotado);
-                eventosScrap.insert(event);
-            }
-        }
-
-        List<List<Evento>> updatedEventos = newEvents(eventosScrap);
-        System.out.println("Eventos nuevos");
-        for(Evento evento: updatedEventos.get(0)){
-            evento.showEvento();
-            System.out.println("________");
-        }
-        System.out.println("Eventos viejos");
-        for(Evento evento: updatedEventos.get(1)){
-            evento.showEvento();
-            System.out.println("________");
-        }
-        driver.close();
         MailMan mailMan = new MailMan();
-        mailMan.sendEventos(updatedEventos);
-        System.out.println("Done");
+        try {
+            System.setProperty("webdriver.chrome.driver", "ChromeDriver/chromedriver.exe");
+            ChromeDriver driver = new ChromeDriver();
+            driver.get(url);
+
+            WebElement username = driver.findElementById("login");
+            username.sendKeys("pablosky301@gmail.com");
+
+            WebElement password = driver.findElementById("password");
+            password.sendKeys("3sF5qq417");
+
+            WebElement button = driver.findElementById("continue_button");
+            button.click();
+
+            WebElement button2 = driver.findElementById("account_cart_button");
+            button2.click();
+
+            WebElement button3 = driver.findElementById("addOtherProducts");
+            button3.click();
+
+            List<WebElement> eventos = driver.findElementByClassName("group_content").findElements(By.cssSelector("*"));
+
+            Tree eventosScrap = new Tree();
+
+            for (WebElement evento : eventos) {
+                if (evento.getAttribute("id").contains("prod_")) {
+                    int id = ID(evento);
+                    String title = title(evento);
+                    String date = date(evento);
+                    String place = place(evento);
+                    int agotado = agotado(evento);
+                    Evento event = new Evento(id, title, place, date, agotado);
+                    eventosScrap.insert(event);
+                }
+            }
+
+            List<List<Evento>> updatedEventos = newEvents(eventosScrap);
+            System.out.println("Eventos nuevos");
+            for (Evento evento : updatedEventos.get(0)) {
+                evento.showEvento();
+                System.out.println("________");
+            }
+            System.out.println("Eventos viejos");
+            for (Evento evento : updatedEventos.get(1)) {
+                evento.showEvento();
+                System.out.println("________");
+            }
+            driver.close();
+            mailMan.sendEventos(updatedEventos);
+            System.out.println("Done");
+        }catch (Exception e){
+            mailMan.sendError(e.getMessage());
+        }
     }
 
     //Ingresa en la base de datos los nuevos eventos encontrados, y devuleve un lista con los mismos
@@ -106,6 +109,7 @@ public class Crawler {
             return result;
         }
         return result;
+
     }
     private List<List<Evento>> compareAvailabilty(Node sNode, Node dbNode, List<List<Evento>> result,  Statement st){
         if(sNode.left != null)compareAvailabilty(sNode.left,dbNode,result,st);
