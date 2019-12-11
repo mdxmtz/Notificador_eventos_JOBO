@@ -109,7 +109,7 @@ public class MailMan {
         try{
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(username));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("pablotcampos25@gmail.com"));
             message.setSubject("ERROR");
             message.setText(error);
             Transport.send(message);
