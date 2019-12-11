@@ -13,7 +13,7 @@ import java.util.Properties;
 public class MailMan {
 
     final private String username = "anunciosjobo@gmail.com";
-    final private String password = "I9H%8Lo!!OOl16";
+    final private String password = "";
     private Properties prop;
     private Session session;
 
@@ -103,8 +103,8 @@ public class MailMan {
         }catch (MessagingException e) {
             e.printStackTrace();
         }
-
     }
+
     public void sendError(String error){
         try{
             Message message = new MimeMessage(session);
