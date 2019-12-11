@@ -37,4 +37,38 @@
         <version>5.1.32</version>
     </dependency>
   </dependencies>
+  
+  <build>
+      <plugins>
+          <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <configuration>
+                  <finalName>crawler</finalName>
+                  <archive>
+                      <manifest>
+                          <mainClass>Notificador_eventos_JOBO.Notificador_eventos_JOBO.App</mainClass>
+                      </manifest>
+                  </archive>
+                  <descriptorRefs>
+                      <descriptorRef>
+                          jar-with-dependencies
+                      </descriptorRef>                    
+                  </descriptorRefs>
+                  <appendAssemblyId>false</appendAssemblyId>
+              </configuration>
+          </plugin>
+    
+
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-resources-plugin</artifactId>
+              <version>3.0.1</version>
+              <configuration>
+                  <nonFilteredFileExtensions>
+                      <nonFilteredFileExtension>exe</nonFilteredFileExtension>
+                  </nonFilteredFileExtensions>
+              </configuration>
+          </plugin>
+      </plugins>
+  </build>
 </project>
